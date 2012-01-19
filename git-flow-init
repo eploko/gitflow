@@ -1,3 +1,5 @@
+#/bin/bash
+
 #
 # git-flow -- A collection of Git extensions to provide high-level
 # repository operations for Vincent Driessen's branching model.
@@ -56,7 +58,8 @@ cmd_default() {
 		git init
 	else
 		# assure that we are not working in a repo with local changes
-		git_repo_is_headless || require_clean_working_tree
+		git_repo_is_headless
+#|| require_clean_working_tree
 	fi
 
 	# running git flow init on an already initialized repo is fine
@@ -222,7 +225,7 @@ cmd_default() {
 		git checkout -q "$develop_branch"
 	fi
 
-	# finally, ask the user for naming conventions (branch and tag prefixes)
+	# Now ask the user for naming conventions (branch and tag prefixes)
 	if flag force || \
 	   ! git config --get gitflow.prefix.feature >/dev/null 2>&1 || 
 	   ! git config --get gitflow.prefix.release >/dev/null 2>&1 || 
@@ -303,6 +306,37 @@ cmd_default() {
 		git config gitflow.prefix.versiontag "$prefix"
 	fi
 
+	# finally, ask for domain credentials (access to Jira & Crucible)
+	if flag force || \
+		! git config --git gitflow.ld.username >/dev/null 2>&1 ||
+		! git config --git gitflow.ld.password >/dev/null 2>&1; then
+		echo
+		echo "Now we need to configure your domain access (Jira, Crucible, etc.)."
+	fi
+
+	# Domain username
+	if ! git config --get gitflow.ld.username >/dev/null 2>&1 || flag force; then
+		default_suggestion=$(git config --get gitflow.ld.username || echo "")
+		printf "Domain username? [$default_suggestion] "
+		if noflag defaults; then
+			read answer
+		else
+			printf "\n"
+		fi
+		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
+		git config gitflow.ld.username "$prefix"
+	fi
+
+	# Domain password
+	# TODO: Make it safe!!!
+	if ! git config --get gitflow.ld.password >/dev/null 2>&1 || flag force; then
+		default_suggestion=""
+		printf "Domain password? "
+		read -s answer
+		printf "\n"
+		[ "$answer" = "-" ] && prefix= || prefix=${answer:-$default_suggestion}
+		gitflow_set_password "$prefix"
+	fi
 
 	# TODO: what to do with origin?
 }

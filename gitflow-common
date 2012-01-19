@@ -175,12 +175,27 @@ gitflow_has_prefixes_configured() {
 	git config --get gitflow.prefix.versiontag >/dev/null 2>&1
 }
 
+gitflow_has_domain_configured() {
+	git config --get gitflow.ld.username >/dev/null 2>&1 && \
+	git config --get gitflow.ld.password >/dev/null 2>&1
+}
+
+gitflow_get_password() {
+	echo `git config --get gitflow.ld.password` | openssl base64 -d
+}
+
+gitflow_set_password() {
+	local encpasswd=`echo $1 | openssl base64 -e`
+	git config gitflow.ld.password "$encpasswd"
+}
+
 gitflow_is_initialized() {
 	gitflow_has_master_configured                    && \
 	gitflow_has_develop_configured                   && \
 	[ "$(git config --get gitflow.branch.master)" !=    \
 	  "$(git config --get gitflow.branch.develop)" ] && \
-	gitflow_has_prefixes_configured
+	gitflow_has_prefixes_configured					 && \
+	gitflow_has_domain_configured
 }
 
 # loading settings that can be overridden using git config
