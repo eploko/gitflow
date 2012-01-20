@@ -24,7 +24,7 @@ my $encoded_password = trim(`git config --get gitflow.ld.password`);
 my $password         = trim(decode_base64($encoded_password));
 my $jira_base_url    = 'http://jira/';
 
-my %workflow_statuses = {
+my $workflow_statuses = {
 	'Open' => 1,
 	'In Progress' => 3,
 	'Code Review' => 10011,
@@ -32,7 +32,7 @@ my %workflow_statuses = {
 	'Closed' => 6
 };
 
-my %workflow_resolutions = {
+my $workflow_resolutions = {
 	'Fixed' => 1,
 	'Won\'t Fix' => 2,
 	'Duplicate' => 3,
@@ -75,7 +75,7 @@ sub startFeature {
 		# get the current ticket
 		my $curIssue = eval { $jira->getIssue($curFeature) };
 		# move issue over the workflow (stop progress)
-		if ($curIssue->{status} == $workflow_statuses{'In Progress'}) {
+		if ($curIssue->{status} == GitFlowCommon::$workflow_statuses{'In Progress'}) {
 			$jira->progress_workflow_action_safely(
 				$curIssue,
 				'Stop Progress'
@@ -89,7 +89,7 @@ sub startFeature {
 	# check tiket exists
 	warnTicketInvalid() if $@;
 	# check ticket is opened
-	warnTicketAlreadyWorking() if ($newIssue->{status} != $workflow_statuses{'Open'});
+	warnTicketAlreadyWorking() if ($newIssue->{status} != GitFlowCommon::$workflow_statuses{'Open'});
 	
 	# remember ticket & assignee 
 	system("git config gitflow.prefix.feature.issue $newFeature");
@@ -111,7 +111,7 @@ sub finishFeature {
 	# check tiket exists
 	warnTicketInvalid() if $@;
 	# check ticket is resolved
-	warnTicketNotFinished() if ($issue->{status} != $workflow_statuses{'Resolved'} && $issue->{status} != $workflow_statuses{'Closed'});
+	warnTicketNotFinished() if ($issue->{status} != eval {GitFlowCommon::$workflow_statuses{'Resolved'}} && $issue->{status} != eval {GitFlowCommon::$workflow_statuses{'Closed'}});
 	
 	# clear config
 	system("git config --unset gitflow.prefix.feature.issue");
