@@ -50,20 +50,20 @@ my $jira = JIRA::Client->new( $jira_base_url, $user, $password );
 #print "Status: " . $issue->{status} . "\n";
 #print Dumper($jira->get_statuses());
 
-sub dieTicketInvalid() {
+sub warnTicketInvalid() {
 	die "Feature name is not a valid jira-ticket.\n";
 }
 
-sub dieTicketAlreadyWorking() {
-	die "Feature is already in progress.\n";
+sub warnTicketAlreadyWorking() {
+	print "Feature is already in progress.\n";
 }
 
-sub dieTicketNotWorking() {
-	die "Feature is not in progress.\n";
+sub warnTicketNotWorking() {
+	print "Feature is not in progress.\n";
 }
 
-sub dieTicketNotFinished() {
-	die "Feature is not done yet.\n";
+sub warnTicketNotFinished() {
+	print "Feature is not done yet.\n";
 }
 
 # start new feature
@@ -75,19 +75,21 @@ sub startFeature {
 		# get the current ticket
 		my $curIssue = eval { $jira->getIssue($curFeature) };
 		# move issue over the workflow (stop progress)
-		$jira->progress_workflow_action_safely(
-			$curIssue,
-			'Stop Progress'
-		);
+		if ($curIssue->{status} == $workflow_statuses{'In Progress'}) {
+			$jira->progress_workflow_action_safely(
+				$curIssue,
+				'Stop Progress'
+			);
+		}
 	}
 
 	# get the new ticket
 	my $newIssue = eval { $jira->getIssue($newFeature) };
 	my $assignee = $newIssue->{assignee};
 	# check tiket exists
-	dieTicketInvalid() if $@;
+	warnTicketInvalid() if $@;
 	# check ticket is opened
-	dieTicketAlreadyWorking() if ($newIssue->{status} != 1);
+	warnTicketAlreadyWorking() if ($newIssue->{status} != $workflow_statuses{'Open'});
 	
 	# remember ticket & assignee 
 	system("git config gitflow.prefix.feature.issue $newFeature");
@@ -107,9 +109,9 @@ sub finishFeature {
 	# get the ticket
 	my $issue = eval { $jira->getIssue($feature) };
 	# check tiket exists
-	dieTicketInvalid() if $@;
+	warnTicketInvalid() if $@;
 	# check ticket is resolved
-	dieTicketNotFinished() if ($issue->{status} != 5 && $issue->{status} != 6);
+	warnTicketNotFinished() if ($issue->{status} != $workflow_statuses{'Resolved'} && $issue->{status} != $workflow_statuses{'Closed'});
 	
 	# clear config
 	system("git config --unset gitflow.prefix.feature.issue");
