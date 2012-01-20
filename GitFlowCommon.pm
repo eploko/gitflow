@@ -89,8 +89,6 @@ sub startFeature {
 	# check ticket is opened
 	dieTicketAlreadyWorking() if ($newIssue->{status} != 1);
 	
-	# start the feature
-	system("git flow feature start $newFeature");
 	# remember ticket & assignee 
 	system("git config gitflow.prefix.feature.issue $newFeature");
 	system("git config gitflow.prefix.feature.assignee $assignee");
@@ -116,12 +114,4 @@ sub finishFeature {
 	# clear config
 	system("git config --unset gitflow.prefix.feature.issue");
 	system("git config --unset gitflow.prefix.feature.assignee");
-	# finish feature
-	system("git flow feature finish $feature");
-}
-
-if ("$ARGV[0]" eq "start") {
-	startFeature "$ARGV[1]";
-} elsif ("$ARGV[0]" eq "finish") {
-	finishFeature "$ARGV[1]";
 }
