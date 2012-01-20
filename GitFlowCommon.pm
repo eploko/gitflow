@@ -22,7 +22,7 @@ sub trim($)
 my $user             = trim(`git config --get gitflow.ld.username`);
 my $encoded_password = trim(`git config --get gitflow.ld.password`);
 my $password         = trim(decode_base64($encoded_password));
-my $jira_base_url    = 'https://jira/';
+my $jira_base_url    = 'http://jira/';
 
 my %workflow_statuses = {
 	'Open' => 1,
