@@ -58,9 +58,7 @@ cmd_default() {
 		git init
 	else
 		# assure that we are not working in a repo with local changes
-		git_repo_is_headless
-# TODO: uncomment this in production
-#|| require_clean_working_tree
+		git_repo_is_headless || require_clean_working_tree
 	fi
 
 	# running git flow init on an already initialized repo is fine
