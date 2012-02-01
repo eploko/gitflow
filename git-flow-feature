@@ -217,7 +217,7 @@ cmd_start() {
 	fi
 
 	# start progress for jira ticket
-	perl git-flow-feature.pl start $1
+	perl "$GITFLOW_DIR/git-flow-feature.pl" start $1
 
 	echo
 	echo "Summary of actions:"
@@ -339,7 +339,7 @@ cmd_finish() {
 	helper_finish_cleanup
 
 	# stop progress for jira ticket
-	perl git-flow-feature.pl finish $1
+	perl "$GITFLOW_DIR/git-flow-feature.pl" finish $1
 }
 
 helper_finish_cleanup() {
